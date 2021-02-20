@@ -26,6 +26,9 @@ var Stypes = []string{
 	"междометие",
 }
 
+//
+//Requestsiteshell
+//
 func querryStype(s string) int {
 	res, _ := http.Get("https://ru.wiktionary.org/wiki/" + s)
 	defer res.Body.Close()
@@ -41,7 +44,7 @@ func querryStype(s string) int {
 		return resultdec
 
 	} else {
-		return 404
+		return querryAlt(s)
 	}
 
 }
@@ -81,6 +84,9 @@ func querryAlttwo(s string) int {
 
 }
 
+//
+//Helpers
+//
 func decodeStype(s string) int {
 	for i, v := range Stypes {
 		if strings.Contains(s, v) {
@@ -99,6 +105,9 @@ func contains(s []string, e string) bool {
 	return false
 }
 
+//
+//Datase thingy
+//
 func sqldb() *sql.DB {
 	//init
 	database, _ :=
@@ -118,8 +127,22 @@ func addtodb(word string, stype int) {
 	statement.Exec(word, stype)
 }
 
+//
+//Helper with order
+//
+func numberofword(s string) {
+	for k, v := range RusWords {
+		if v == s {
+			fmt.Println("State: ", k)
+		}
+	}
+}
+
 func main() {
+	//
 	//init
+	//
+
 	sqldb()
 
 	file, _ := os.Open("Gugo.txt")
@@ -132,6 +155,9 @@ func main() {
 
 	file.Close()
 
+	//
+	//Adding unique words to list of words
+	//
 	for _, eachline := range txtlines {
 		s := strings.ToLower(eachline)
 		words := strings.Replace(s, "\n", " ", -1)
@@ -146,6 +172,8 @@ func main() {
 		words = strings.Replace(words, "«", " ", -1)
 		words = strings.Replace(words, "»", " ", -1)
 		words = strings.Replace(words, "…", " ", -1)
+		words = strings.Replace(words, "[", " ", -1)
+		words = strings.Replace(words, "]", " ", -1)
 		out := strings.Split(words, " ")
 		for _, v := range out {
 			if contains(RusWords, v) == false {
@@ -155,9 +183,13 @@ func main() {
 
 	}
 
+	//
+	//Mainloop
+	//
 	fmt.Println("Done s1: ", len(RusWords))
-	for _, word := range RusWords {
+	for _, word := range RusWords[6510:] {
 		fmt.Println("Doing: " + word)
+		numberofword(word)
 		querryStype(word)
 		fmt.Println("OK")
 
