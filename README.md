@@ -1,3 +1,6 @@
+![GitHub](https://img.shields.io/github/license/soulllink/RusWords)
+
+
 ## RusWords
 
 RusWords - это проект по составлению базы данных для игры на определение частей речи.
