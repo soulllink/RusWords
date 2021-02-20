@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"regexp"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -135,8 +134,17 @@ func main() {
 
 	for _, eachline := range txtlines {
 		s := strings.ToLower(eachline)
-		words := regexp.MustCompile("[\\p{L}\\d_]+")
-		out := words.FindAllString(s, -1)
+		words := strings.Replace(s, "\n", " ", -1)
+		words = strings.Replace(words, "!", " ", -1)
+		words = strings.Replace(words, ",", " ", -1)
+		words = strings.Replace(words, "?", " ", -1)
+		words = strings.Replace(words, ".", " ", -1)
+		words = strings.Replace(words, "(", " ", -1)
+		words = strings.Replace(words, ")", " ", -1)
+		words = strings.Replace(words, "«", " ", -1)
+		words = strings.Replace(words, "»", " ", -1)
+		words = strings.Replace(words, "…", " ", -1)
+		out := strings.Split(words, " ")
 		for _, v := range out {
 			if contains(RusWords, v) == false {
 				RusWords = append(RusWords, v)
