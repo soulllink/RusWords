@@ -3,9 +3,7 @@ package main
 import (
 	"bufio"
 	"database/sql"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"regexp"
@@ -15,12 +13,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type Stype struct {
-	Word    string `json:"w"`
-	Stypeid int    `json:"id"`
-}
-
-var RusStype []Stype
 var RusWords []string
 var Stypes = []string{
 	"существительное",
@@ -36,11 +28,11 @@ var Stypes = []string{
 }
 
 func querryStype(s string) int {
-	res, _ := http.Get("https://pishugramotno.ru/morfologiya/" + s)
+	res, _ := http.Get("https://ru.wiktionary.org/wiki/" + s)
 	defer res.Body.Close()
 	if strings.Contains(res.Status, "200") {
 		doc, _ := goquery.NewDocumentFromReader(res.Body)
-		preprocess := doc.Find("h2").Text()
+		preprocess := doc.Find("a").Text()
 		preprocess = strings.ToLower(preprocess)
 		resultdec := decodeStype(preprocess)
 		if resultdec == -1 {
@@ -56,6 +48,26 @@ func querryStype(s string) int {
 }
 
 func querryAlt(s string) int {
+	res, _ := http.Get("https://pishugramotno.ru/morfologiya/" + s)
+	defer res.Body.Close()
+	if strings.Contains(res.Status, "200") {
+		doc, _ := goquery.NewDocumentFromReader(res.Body)
+		preprocess := doc.Find("h2").Text()
+		preprocess = strings.ToLower(preprocess)
+		resultdec := decodeStype(preprocess)
+		if resultdec == -1 {
+			resultdec = querryAlttwo(preprocess)
+		}
+		addtodb(s, resultdec)
+		return resultdec
+
+	} else {
+		return 404
+	}
+
+}
+
+func querryAlttwo(s string) int {
 	res, _ := http.Get("https://rustxt.ru/morfologicheskij-razbor-slova/" + s)
 	defer res.Body.Close()
 	if strings.Contains(res.Status, "200") {
@@ -108,8 +120,6 @@ func addtodb(word string, stype int) {
 }
 
 func main() {
-	// s := querryStype("и")
-	// fmt.Println(s)
 	//init
 	sqldb()
 
@@ -135,23 +145,11 @@ func main() {
 
 	}
 
-	// for k, v := range RusWords {
-	// 	if v == "крылья" {
-	// 		fmt.Println("Position: ", k)
-	// 	}
-	// }
-
 	fmt.Println("Done s1: ", len(RusWords))
-	for _, word := range RusWords[10046:] {
-		// go querryStype(word)
+	for _, word := range RusWords {
 		fmt.Println("Doing: " + word)
-		worddata := Stype{word, querryStype(word)}
-		RusStype = append(RusStype, worddata)
+		querryStype(word)
 		fmt.Println("OK")
 
 	}
-
-	filej, _ := json.MarshalIndent(RusStype, "", " ")
-
-	_ = ioutil.WriteFile("Gugo.json", filej, 0644)
 }
