@@ -136,6 +136,8 @@ func main() {
 		s := strings.ToLower(eachline)
 		words := strings.Replace(s, "\n", " ", -1)
 		words = strings.Replace(words, "!", " ", -1)
+		words = strings.Replace(words, ":", " ", -1)
+		words = strings.Replace(words, ";", " ", -1)
 		words = strings.Replace(words, ",", " ", -1)
 		words = strings.Replace(words, "?", " ", -1)
 		words = strings.Replace(words, ".", " ", -1)
